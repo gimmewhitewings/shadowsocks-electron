@@ -130,8 +130,6 @@ export class SSClient extends Client {
       (SIP003PluginEnabled && pluginOpts) ? '--plugin-opts' : '',
       SIP003PluginEnabled ? `"${pluginOpts ?? ''}"` : '',
       this.settings.verbose ? '-v' : '',
-      "-t",
-      (config.timeout ?? "600").toString(),
       isAclEnabled ? '--acl' : '',
       isAclEnabled ? `${acl.url}` : ''
     ].filter(arg => arg !== '' && arg !== '""');
