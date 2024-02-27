@@ -1,13 +1,13 @@
-import { EventEmitter } from 'events';
-import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
+import {EventEmitter} from 'events';
+import {ChildProcessWithoutNullStreams, spawn} from 'child_process';
 import path from 'path';
 
 import checkPortInUse from './helpers/port-checker';
-import { debounce, getPluginsPath, getSSLocalBinPath } from '../utils/utils';
-import { Settings, SSRConfig, SSConfig, ServiceResult } from '../types';
+import {debounce, getPluginsPath, getSSLocalBinPath} from '../utils/utils';
+import {ServiceResult, Settings, SSConfig, SSRConfig} from '../types';
 import logger from '../logs';
-import { DefinedPlugin } from './plugin';
-import { isWindows } from '../config';
+import {DefinedPlugin} from './plugin';
+import {isWindows} from '../config';
 
 export type SupportedClient = SSRClient | SSClient;
 
@@ -73,19 +73,19 @@ export class Client extends EventEmitter {
 
   protected async onExited(cb?: (success: boolean) => void) {
     checkPortInUse([this.settings.localPort], '127.0.0.1')
-    .then(async results => {
-      if (results[0]?.isInUse) {
-        this.connected = true;
-        this.emit('connected', true);
-        cb && cb(true);
-      } else {
-        logger.info(`Exited ${this.bin} with error ${this.error}`);
+      .then(async results => {
+        if (results[0]?.isInUse) {
+          this.connected = true;
+          this.emit('connected', true);
+          cb && cb(true);
+        } else {
+          logger.info(`Exited ${this.bin} with error ${this.error}`);
 
-        this.connected = false;
-        this.emit('connected', false);
-        cb && cb(false);
-      }
-    });
+          this.connected = false;
+          this.emit('connected', false);
+          cb && cb(false);
+        }
+      });
   }
 }
 
@@ -98,12 +98,12 @@ export class SSClient extends Client {
   }
 
   parseParams(config: SSConfig) {
-    const { acl } = this.settings;
+    const {acl} = this.settings;
     const isAclEnabled = acl.enable && acl.url;
     const embedPluginEnabled = config.plugin && config.plugin !== 'define' && config.plugin !== 'define_sip003';
     const customisedSIP003PluginEnabled = config.plugin && config.plugin === 'define_sip003';
     const SIP003PluginEnabled = embedPluginEnabled || customisedSIP003PluginEnabled;
-    let { plugin, pluginOpts } = config;
+    let {plugin, pluginOpts} = config;
 
     if (embedPluginEnabled && !isWindows) {
       plugin = getPluginsPath(config.plugin);
@@ -115,17 +115,13 @@ export class SSClient extends Client {
 
     this.params = [
       '-s',
-      config.serverHost,
-      '-p',
-      config.serverPort.toString(),
-      '-b',
-      '127.0.0.1',
-      '-l',
-      this.port.toString(),
+      config.serverHost + ":" + config.serverPort.toString(),
       '-k',
       config.password,
       '-m',
       config.encryptMethod,
+      '--local-addr',
+      '127.0.0.1' + ":" + this.port.toString(),
       config.udp ? '-u' : '',
       config.fastOpen ? '--fast-open' : '',
       config.noDelay ? '--no-delay' : '',
@@ -141,7 +137,7 @@ export class SSClient extends Client {
     ].filter(arg => arg !== '' && arg !== '""');
   }
 
-  connect(config: SSConfig = this.config): Promise<{code: number, result: any}> {
+  connect(config: SSConfig = this.config): Promise<{ code: number, result: any }> {
     return new Promise(resolve => {
       this.parseParams(config);
       if (config.definedPlugin && config.plugin === 'define') {
@@ -266,7 +262,7 @@ export class SSRClient extends Client {
   }
 
   parseParams(config: SSRConfig) {
-    const { acl } = this.settings;
+    const {acl} = this.settings;
     const isAclEnabled = acl.enable && acl.url;
     this.params = [
       '-s',
@@ -298,7 +294,7 @@ export class SSRClient extends Client {
     ].filter(arg => arg !== '');
   }
 
-  connect(config: SSRConfig = this.config): Promise<{code: number, result: any}> {
+  connect(config: SSRConfig = this.config): Promise<{ code: number, result: any }> {
     return new Promise(resolve => {
       this.parseParams(config);
       if (config.definedPlugin && config.plugin === 'define') {
